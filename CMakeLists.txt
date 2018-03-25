@@ -22,7 +22,22 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 # Declare the executable target built from your sources
-add_executable(parzen src/main.cpp)
+add_executable(parzen
+        src/parzen.cpp
+        src/DataLoader.cpp
+        src/DataLoader.h
+        src/DataStructure.h)
 
 # Link your application with OpenCV libraries
 target_link_libraries(parzen ${OpenCV_LIBS})
+
+
+# Declare the executable target built from your sources
+add_executable(knn
+        src/knn.cpp
+        src/DataLoader.cpp
+        src/DataLoader.h
+        src/DataStructure.h)
+
+# Link your application with OpenCV libraries
+target_link_libraries(knn ${OpenCV_LIBS})
