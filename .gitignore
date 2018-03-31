@@ -3,3 +3,5 @@ data/
 cmake-build-debug/
 .idea/
 doc/*.docx
+references/code/
+
