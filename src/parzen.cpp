@@ -221,7 +221,7 @@ namespace ws
             train.class_id = dataset[i].class_id;
             test.class_id = dataset[i].class_id;
 
-            for(int j = 0; j < N_TOTAL_SET * TRAIN_PERCENT; j++)
+            for(int j = 0; j < N_TOTAL_SET * TRAIN_PERCENT && j < dataset[i].data_list.size(); j++)
             {
                 Data data = dataset[i].data_list[j];
                 data.img = preProcessMat(data.img);
@@ -229,7 +229,7 @@ namespace ws
             }
             train_set.push_back(train);
 
-            for(int j = N_TOTAL_SET * TRAIN_PERCENT; j < N_TOTAL_SET; j++)
+            for(int j = N_TOTAL_SET * TRAIN_PERCENT; j < N_TOTAL_SET && j < dataset[i].data_list.size(); j++)
             {
                 Data data = dataset[i].data_list[j];
                 data.img = preProcessMat(data.img);

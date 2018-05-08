@@ -40,8 +40,18 @@ private:
     void read_images(string dir, vector<vector<unsigned char> >& images);
 
 private:
-    int m_n_rows;
-    int m_n_cols;
+    int m_n_rows = 0;
+    int m_n_cols = 0;
+};
+
+
+class Face : public DataLoader
+{
+public:
+    Dataset readDataset(string dir, string img_ext="jpg", double train_rate=0.8, bool is_load = true);
+
+private:
+    cv::RNG m_rng;
 };
 
 #endif //PR_FLOWERS17_H

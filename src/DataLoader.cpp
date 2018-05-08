@@ -110,6 +110,7 @@ Dataset Flower17::readDataset(string dir, bool is_load)
         ss << jpg_files[i];
         int class_id = -1;
         ss >> class_id;
+
         vector<string> img_files = get_all_files(class_dir);
         Class a_class;
         a_class.class_id = class_id;
@@ -130,6 +131,7 @@ Dataset Flower17::readDataset(string dir, bool is_load)
 
             a_class.data_list.push_back(data);
         }
+
         ret.push_back(a_class);
     }
     cout << "Load dataset successfully. " << endl;
@@ -223,6 +225,14 @@ Dataset Mnist::readDataset(string dir, bool is_load)
         ret[labels_v[i]].data_list.push_back(data);
     }
 
+    for (int j = 0; j < ret.size(); ++j)
+    {
+        // TODO: cause number 0 and number 8 ruin the result of prediction
+        // TODO: think about block them and test again
+        if (ret[j].class_id == 0 || ret[j].class_id == 8)
+            ret[j].data_list.clear();
+    }
+
     return ret;
 }
 
@@ -303,6 +313,72 @@ void Mnist::read_images(string dir, vector<vector<unsigned char> > &images)
 
         }
     }
+}
+
+// endregion
+
+
+// region Face functions
+
+Dataset Face::readDataset(string dir, string img_ext, double train_rate, bool is_load)
+{
+    Dataset ret;
+    vector<string> class_files = get_all_files(dir);
+
+    // get all class names
+    for (int i = 0; i < class_files.size(); i++)
+    {
+        string class_name = class_files[i];
+        // remove the first English letter, if necessary
+        if((class_name[0] <= 'z' && class_name[0] >= 'a') ||
+                (class_name[0] <= 'Z' && class_name[0] >= 'A'))
+        {
+            class_name.erase(class_name.begin(), class_name.begin() + 1);
+        }
+
+        int class_id = -1;
+        stringstream ss;
+        ss << class_name;
+        ss >> class_id;
+
+        Class a_class;
+        a_class.class_id = class_id;
+
+        string img_dir = dir + "/" + class_files[i];
+        vector<string> img_files = get_all_files(img_dir);
+        for (int j = 0; j < img_files.size(); j++)
+        {
+            // avoid error files
+            string img_ext_l, img_ext_u;
+            transform(img_ext.begin(), img_ext.end(), back_inserter(img_ext_u), ::toupper);
+            transform(img_ext.begin(), img_ext.end(), back_inserter(img_ext_l), ::tolower);
+
+            if(img_files[j].find(img_ext_u) == string::npos &&
+                    img_files[j].find(img_ext_l) == string::npos)
+                continue;
+
+            string img_path = img_dir + "/" + img_files[j];
+            Data data;
+            data.label = class_id;
+            data.filename = img_path;
+            if(is_load)
+            {
+                data.img = cv::imread(img_path);
+            }
+
+            if(m_rng.uniform(0, 1) < train_rate)
+                data.data_type = DatasetTrain;
+            else
+                data.data_type = DatasetValid;
+
+            a_class.data_list.push_back(data);
+        }
+
+        ret.push_back(a_class);
+    }
+
+    cout << "Load dataset successfully. " << endl;
+    return ret;
 }
 
 // endregion

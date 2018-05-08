@@ -13,7 +13,7 @@ using namespace std;
 enum DataSetType
 {
     DatasetTrain = 0,
-    DatasetValid = 1
+    DatasetValid = 1,
 };
 
 struct Data
