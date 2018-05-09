@@ -16,6 +16,7 @@ import cv2
 import numpy as np
 import scipy.io as sio
 
+
 PIE_DATASET_DIR = '/home/ros/ws/algorithm/PatternRecognize/data/PIE_face_dataset'
 PIE_OUT_DIR = '/home/ros/ws/algorithm/PatternRecognize/data/PIE_face_dataset_modified'
 
@@ -60,6 +61,10 @@ def process_mat_file(filename):
 
 
 def split_dataset():
+    """
+    Split ORL dataset into train and test sub-dataset as the rules given in PPT
+    :return:
+    """
     check_dir(ORL_OUT_DIR)
     dir_train = os.path.join(ORL_OUT_DIR, 'train')
     dir_test = os.path.join(ORL_OUT_DIR, 'test')
@@ -67,7 +72,7 @@ def split_dataset():
     check_dir(dir_test)
 
     for root, dirs, class_files in os.walk(ORL_DATASET_DIR):
-        n_files = len(class_files)
+        n_files = len(dirs)
         class_idx = 0
         for class_name in dirs:
             class_idx = class_idx + 1
@@ -98,7 +103,12 @@ def split_dataset():
                     img_idx = img_idx + 1
 
 
-def main_1():
+def convert_mat_files():
+    """
+    Convert mat files into images and labels & write them into disk
+    and split them into train & test sub-dataset by isTest parameter
+    :return:
+    """
     # first of all, walk dataset dir to get all `*.mat` files
     t_begin = time.time()
     for root, dirs, files in os.walk(PIE_DATASET_DIR, topdown=True):
@@ -113,7 +123,7 @@ def main_1():
     print('Elapsed time: ', time.time() - t_begin, 's.')
 
 
-def main_2():
+def split_dataset_test():
     t_begin = time.time()
     split_dataset()
 
@@ -122,4 +132,4 @@ def main_2():
 
 
 if __name__ == '__main__':
-    main_2()
+    split_dataset_test()

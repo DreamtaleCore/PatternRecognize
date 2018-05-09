@@ -4,9 +4,14 @@
 #include <ctime>
 
 const int N_REDUCE_DIMENTATION = 800;
-const string DISTANCE_TYPE = "Mahalanobis";
+const string DISTANCE_TYPE = "Manhattan";
 const bool IS_SHOW_FACE = false;
-const string IMAGE_SAVE_DIR = "/home/ros/ws/algorithm/PatternRecognize/data/ORL_data_out/eigen_face_100";
+const bool IS_SAVE_FACE = false;
+const string IMAGE_SAVE_DIR = "/home/ros/ws/algorithm/PatternRecognize/data/PIE_data_out/eigen_face_100";
+
+const string DATASET_TRAIN_DIR = "/home/ros/ws/algorithm/PatternRecognize/data/PIE_face_dataset_modified/train";
+const string DATASET_TEST_DIR = "/home/ros/ws/algorithm/PatternRecognize/data/PIE_face_dataset_modified/test";
+const string IMG_EXT_NAME = "jpg";
 
 void showImage(string title, cv::Mat image, bool is_save = false)
 {
@@ -185,10 +190,7 @@ int main()
 //    test::load_data();
     // Step 1: load train dataset
     Face face;
-    Dataset dataset_train = face.readDataset(
-            "/home/ros/ws/algorithm/PatternRecognize/data/ORL_face_dataset/ORL92112_modified/train",
-            "bmp"
-    );
+    Dataset dataset_train = face.readDataset(DATASET_TRAIN_DIR, IMG_EXT_NAME);
     cv::Size img_sz = dataset_train[0].data_list[0].img.size();
 
     // Step 2: convert dataset into big matrix
@@ -227,17 +229,16 @@ int main()
         ss << "class " << dataset_train[i].class_id;
         if (IS_SHOW_FACE)
         {
-            showImage(ss.str(), pca_classes[i].mean.reshape(0, img_sz.height), false);
+            showImage(ss.str(), pca_classes[i].mean.reshape(0, img_sz.height), IS_SAVE_FACE);
             cv::waitKey(50);
         }
     }
+    if(IS_SAVE_FACE)
+        return 0;
 
     // Step 5: load test dataset
     cout << endl << "===== Begin to test =====" << endl;
-    Dataset dataset_test = face.readDataset(
-            "/home/ros/ws/algorithm/PatternRecognize/data/ORL_face_dataset/ORL92112_modified/test",
-            "bmp"
-    );
+    Dataset dataset_test = face.readDataset(DATASET_TEST_DIR, IMG_EXT_NAME);
 
     // Step 6: compute each image's weight vector through pca_total
     double t_start = clock();
