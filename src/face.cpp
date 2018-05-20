@@ -3,8 +3,8 @@
 #include "DataLoader.h"
 #include <ctime>
 
-const int N_REDUCE_DIMENTATION = 800;
-const string DISTANCE_TYPE = "Manhattan";
+const int N_REDUCE_DIMENTATION = 100;
+const string DISTANCE_TYPE = "Mahalanobis";
 const bool IS_SHOW_FACE = false;
 const bool IS_SAVE_FACE = false;
 const string IMAGE_SAVE_DIR = "/home/ros/ws/algorithm/PatternRecognize/data/PIE_data_out/eigen_face_100";
@@ -241,8 +241,16 @@ int main()
     Dataset dataset_test = face.readDataset(DATASET_TEST_DIR, IMG_EXT_NAME);
 
     // Step 6: compute each image's weight vector through pca_total
+    //         and compute the average precision and & recall
     double t_start = clock();
     int n_right = 0, n_total = 0;
+    // Step 6.1: get the max class_id as the 2-d result fusion matrix's cols and rows
+    int max_class_id = 0;
+    for (int i = 0; i < dataset_test.size(); i++)
+        if (max_class_id < dataset_test[i].class_id)
+            max_class_id = dataset_test[i].class_id;
+    cv::Mat fusion_matrix = cv::Mat::zeros(cv::Size(max_class_id, max_class_id), CV_32F);
+
     for (int i = 0; i < dataset_test.size(); i++)
     {
         int n_right_k = 0;
@@ -271,17 +279,37 @@ int main()
                 n_right++;
                 n_right_k++;
             }
+            fusion_matrix.at<float>(dataset_test[i].data_list[j].label - 1, class_id_out - 1) =
+                    fusion_matrix.at<float>(dataset_test[i].data_list[j].label - 1, class_id_out - 1) + 1;
         }
 
         cout << "In test class \t" << dataset_test[i].class_id << ": "
              << n_right_k << "/" << n_total_k <<"(right/total) \t| right rate="
              << (double)n_right_k / (double)n_total_k << endl;
     }
+    // compute the recall and precision
+    vector<float> precisions, recalls;
+    for (int i = 0; i < fusion_matrix.rows; i++)
+    {
+        float p = static_cast<float>(fusion_matrix.at<float>(i, i) / cv::sum(fusion_matrix.row(i))[0]);
+        float r = static_cast<float>(fusion_matrix.at<float>(i, i) / cv::sum(fusion_matrix.col(i))[0]);
+        // nan avoid
+        if (cv::sum(fusion_matrix.row(i))[0] > 0.00001)
+            precisions.push_back(p);
+        if (cv::sum(fusion_matrix.col(i))[0] > 0.00001)
+            recalls.push_back(r);
+    }
+    float average_p = 0, average_r = 0;
+    for (int i = 0; i < precisions.size(); i++) average_p = average_p + precisions[i];
+    for (int i = 0; i < recalls.size(); i++)    average_r = average_r + recalls[i];
+    average_p = average_p / (float)precisions.size();
+    average_r = average_r / (float)recalls.size();
 
     cout << "============================================" << endl;
     cout << "In test dataset: "
          << n_right << "/" << n_total <<"(right/total) | right rate="
          << (double)n_right / (double)n_total << endl;
+    cout << "Average precision: " << average_p << " \t| average recall: " << average_r << endl;
     cout << "Elapsed time: " << ((clock() - t_start) / CLOCKS_PER_SEC) << " s." << endl;
     cout << "###############################################################" << endl;
 

@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-# For tackling the stupid ROS cv python conflict :-<
+# For tackling the stupid conflict in ROS cv python  :-<
 try:
     sys.path.remove('/home/ros/ws/ros/pc/devel/lib/python2.7/dist-packages')
     sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
@@ -10,7 +10,6 @@ except Exception as e:
 import cv2
 
 import numpy as np
-import scipy.io as sio
 
 import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
@@ -20,8 +19,8 @@ from tflearn.layers.estimator import regression
 from utils import DataLoader as dl
 
 
-# MODEL_PATH = '../models/ORL/alex_net_orl/model'
-MODEL_PATH = '../models/PIE/alex_net_orl/model'
+MODEL_PATH = '../models/ORL/alex_net_orl/model'
+# MODEL_PATH = '../models/PIE/alex_net_orl/model'
 
 
 def create_simple_network(image_size, n_classes):
@@ -103,6 +102,28 @@ def predict(network, model_file, images):
     return model.predict(images)
 
 
+def gather_result(gt, pred):
+    max_class_id = np.max(gt) + 1
+    n_classes = np.zeros((max_class_id, max_class_id))
+
+    for i in range(len(gt)):
+        n_classes[gt[i], pred[i]] = n_classes[gt[i], pred[i]] + 1
+
+    precisions = []
+    recalls = []
+    for i in range(max_class_id):
+        p = n_classes[i, i] / np.sum(n_classes[i, :])
+        r = n_classes[i, i] / np.sum(n_classes[:, i])
+        precisions.append(p)
+        recalls.append(r)
+
+    print('precisions:', precisions)
+    print('recalls:', recalls)
+
+    print('average precision: ', np.mean(precisions))
+    print('average recall:', np.mean(recalls))
+
+
 def run_test():
     X, Y = dl.load_data('ORL', False)
 
@@ -128,8 +149,9 @@ def run_test():
     right_rate = float(right_sum) / float(len(gt))
     print('Predict in test dataset, right rate =', right_rate)
     for i in wrong_idxs:
-        print('---- in test dataset index:', i, 'predict: ', y_pred[i], 'whereas GT:', gt[i])
-    pass
+        print('---- in test dataset index:', i, 'predict:', y_pred[i], '\twhereas GT:', gt[i])
+
+    gather_result(gt, y_pred)
 
 
 def main():
@@ -140,6 +162,6 @@ def main():
 
 
 if __name__ == '__main__':
-    # run_test()
-    main()
+    run_test()
+    # main()
 
