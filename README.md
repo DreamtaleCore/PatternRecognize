@@ -17,8 +17,14 @@ Environment required
 Ubuntu 16.04
 cmake 2.8+
 OpenCV 3.2
+Tensorflow 1.4+
+tflearn
 ```
-
+## First Edition
 > The MNIST dataset you can download from [here](http://yann.lecun.com/exdb/mnist/) and you need create folders in the project root folder as `data/mnist/` and then put the dataset you downloaded and **extract** them in that folder. 
+
+- - -
+## Second Edition
+> Add face recognition project, take `ORL` and `PIE` as the database, using PCA to reduce dimention of images. We show a basic pipeline to handle this recognition task
 
 **All rights reserved**
